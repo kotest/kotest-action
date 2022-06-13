@@ -1,0 +1,46 @@
+name: gradle-build
+description: "Executes a gradle build"
+inputs:
+   gradle-command:
+      description: "The gradle command to run"
+      required: true
+   java-version:
+      description: "The Java SDK version to build"
+      required: true
+      default: "8"
+   distribution:
+      description: "The Java SDK distribution to build"
+      required: true
+      default: "adopt"
+
+runs:
+   using: "composite"
+   steps:
+      -  uses: actions/checkout@v3
+         with:
+            fetch-depth: 0
+
+      -  uses: actions/setup-java@v3
+         with:
+            distribution: ${{ inputs.distribution }}
+            java-version: ${{ inputs.java-version }}
+
+      -  uses: gradle/gradle-build-action@v2
+
+      -  name: Run gradle
+         shell: bash
+         run: ./gradlew ${{ inputs.gradle-command }}
+         env:
+            GRADLE_OPTS: '-Dorg.gradle.configureondemand=false -Dorg.gradle.parallel=false -Dkotlin.incremental=false -Dorg.gradle.jvmargs="-Xmx3g -Dfile.encoding=UTF-8"'
+
+      -  name: Bundle the build report
+         if: failure()
+         shell: bash
+         run: find . -type d -name 'reports' | zip -@ -r build-reports.zip
+
+      -  name: Upload the build report
+         if: failure()
+         uses: actions/upload-artifact@v3
+         with:
+            name: error-report
+            path: build-reports.zip

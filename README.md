@@ -1,2 +1,3 @@
 # kotest-action
-Github action for building a kotest target
+
+Github action for building with gradle

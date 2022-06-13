@@ -11,7 +11,7 @@ inputs:
    distribution:
       description: "The Java SDK distribution to build"
       required: true
-      default: "adopt"
+      default: "temurin"
 
 runs:
    using: "composite"
